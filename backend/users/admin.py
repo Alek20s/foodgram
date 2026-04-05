@@ -8,3 +8,6 @@ from .models import User
 class UserAdmin(BaseUserAdmin):
     list_display = ('email', 'username', 'first_name', 'last_name')
     search_fields = ('email', 'username')
+    fieldsets = BaseUserAdmin.fieldsets + (
+        ('Avatar', {'fields': ('avatar',)}),
+    )
