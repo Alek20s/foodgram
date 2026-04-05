@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                             ShoppingCart, Subscription, Tag)
+                             ShoppingCart, ShortLink, Subscription, Tag)
 
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import PageLimitPagination
@@ -16,15 +16,19 @@ from .permissions import IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeReadSerializer,
                           RecipeShortSerializer, RecipeWriteSerializer,
                           SubscriptionSerializer, TagSerializer,
-                          UserSerializer)
+                          UserCreateSerializer, UserSerializer)
 
 User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
     pagination_class = PageLimitPagination
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserCreateSerializer
+        return UserSerializer
 
     def get_permissions(self):
         if self.action in ('list', 'retrieve', 'create'):
@@ -43,6 +47,11 @@ class UserViewSet(viewsets.ModelViewSet):
     def avatar(self, request):
         user = request.user
         if request.method == 'PUT':
+            if 'avatar' not in request.data:
+                return Response(
+                    {'avatar': 'This field is required.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             serializer = UserSerializer(
                 user, data=request.data, partial=True,
                 context={'request': request}
@@ -207,8 +216,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             url_path='get-link')
     def get_link(self, request, pk=None):
         recipe = get_object_or_404(Recipe, pk=pk)
-        short_link, _ = recipe.short_link.__class__.objects.get_or_create(
-            recipe=recipe
-        )
+        short_link, _ = ShortLink.objects.get_or_create(recipe=recipe)
         link = request.build_absolute_uri(f'/s/{short_link.short_code}/')
         return Response({'short-link': link})

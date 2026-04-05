@@ -122,6 +122,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     )
     image = Base64ImageField()
 
+    def validate(self, data):
+        if self.instance and 'ingredients' not in data:
+            raise serializers.ValidationError(
+                {'ingredients': 'This field is required.'}
+            )
+        if self.instance and 'tags' not in data:
+            raise serializers.ValidationError(
+                {'tags': 'This field is required.'}
+            )
+        return data
+
     class Meta:
         model = Recipe
         fields = (
