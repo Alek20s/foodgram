@@ -7,8 +7,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                             ShoppingCart, ShortLink, Subscription, Tag)
+from recipes.models import (Favorite, Ingredient, Recipe,
+                             RecipeIngredient, ShoppingCart,
+                             ShortLink, Subscription, Tag)
 
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import PageLimitPagination
@@ -38,7 +39,9 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
     def me(self, request):
-        serializer = UserSerializer(request.user, context={'request': request})
+        serializer = UserSerializer(
+            request.user, context={'request': request}
+        )
         return Response(serializer.data)
 
     @action(detail=False, methods=['put', 'delete'],
@@ -58,8 +61,11 @@ class UserViewSet(viewsets.ModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response({'avatar': request.build_absolute_uri(
-                user.avatar.url) if user.avatar else None})
+            avatar_url = (
+                request.build_absolute_uri(user.avatar.url)
+                if user.avatar else None
+            )
+            return Response({'avatar': avatar_url})
         user.avatar.delete(save=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -167,10 +173,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk=None):
         return self._toggle_relation(request, pk, ShoppingCart)
 
-    def _toggle_relation(self, request, pk, Model):
+    def _toggle_relation(self, request, pk, model):
         recipe = get_object_or_404(Recipe, pk=pk)
         if request.method == 'POST':
-            obj, created = Model.objects.get_or_create(
+            obj, created = model.objects.get_or_create(
                 user=request.user, recipe=recipe
             )
             if not created:
@@ -180,7 +186,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 )
             serializer = RecipeShortSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        deleted, _ = Model.objects.filter(
+        deleted, _ = model.objects.filter(
             user=request.user, recipe=recipe
         ).delete()
         if not deleted:
