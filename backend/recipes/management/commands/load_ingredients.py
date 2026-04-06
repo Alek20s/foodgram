@@ -1,6 +1,7 @@
 import json
 import os
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient
@@ -11,9 +12,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         data_path = os.path.join(
-            os.path.dirname(__file__),
-            '..', '..', '..', '..', 'data', 'ingredients.json'
+            settings.BASE_DIR.parent, 'data', 'ingredients.json'
         )
+        if not os.path.exists(data_path):
+            data_path = '/app/data/ingredients.json'
         with open(data_path, encoding='utf-8') as f:
             data = json.load(f)
         Ingredient.objects.bulk_create([
