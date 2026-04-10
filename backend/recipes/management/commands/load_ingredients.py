@@ -18,13 +18,10 @@ class Command(BaseCommand):
             data_path = '/app/data/ingredients.json'
         with open(data_path, encoding='utf-8') as f:
             data = json.load(f)
-        Ingredient.objects.bulk_create([
-            Ingredient(
-                name=item['name'],
-                measurement_unit=item['measurement_unit']
-            )
-            for item in data
-        ], ignore_conflicts=True)
+        Ingredient.objects.bulk_create(
+            (Ingredient(**item) for item in data),
+            ignore_conflicts=True
+        )
         self.stdout.write(
             self.style.SUCCESS(
                 f'Loaded {Ingredient.objects.count()} ingredients.'
