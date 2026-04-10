@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
@@ -9,8 +8,7 @@ from rest_framework.response import Response
 
 from recipes.models import (
     Favorite, Ingredient, Recipe,
-    RecipeIngredient, ShoppingCart,
-    ShortLink, Subscription, Tag
+    ShoppingCart, ShortLink, Subscription, Tag
 )
 
 from .filters import IngredientFilter, RecipeFilter
@@ -22,6 +20,7 @@ from .serializers import (
     SubscriptionSerializer, TagSerializer,
     UserCreateSerializer, UserSerializer
 )
+from .utils import get_shopping_cart_content
 
 User = get_user_model()
 
@@ -106,22 +105,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def subscribe(self, request, pk=None):
         author = get_object_or_404(User, pk=pk)
         if request.method == 'POST':
-            if author == request.user:
-                return Response(
-                    {'error': 'Cannot subscribe to yourself.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            subscription, created = Subscription.objects.get_or_create(
-                user=request.user, author=author
-            )
-            if not created:
-                return Response(
-                    {'error': 'Already subscribed.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
             serializer = SubscriptionSerializer(
-                subscription, context={'request': request}
+                data={},
+                context={'request': request, 'author': author}
             )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         subscription = Subscription.objects.filter(
             user=request.user, author=author
@@ -203,18 +192,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
-        ingredients = RecipeIngredient.objects.filter(
-            recipe__shopping_cart__user=request.user
-        ).values(
-            'ingredient__name', 'ingredient__measurement_unit'
-        ).annotate(total=Sum('amount'))
-
-        lines = [
-            f"{item['ingredient__name']} "
-            f"({item['ingredient__measurement_unit']}) — {item['total']}"
-            for item in ingredients
-        ]
-        content = '\n'.join(lines)
+        content = get_shopping_cart_content(request.user)
         response = HttpResponse(content, content_type='text/plain')
         response['Content-Disposition'] = (
             'attachment; filename="shopping_cart.txt"'

@@ -129,6 +129,12 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     )
     image = Base64ImageField()
 
+    class Meta:
+        model = Recipe
+        fields = (
+            'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time'
+        )
+
     def validate(self, data):
         if self.instance and 'ingredients' not in data:
             raise serializers.ValidationError(
@@ -139,12 +145,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 {'tags': 'This field is required.'}
             )
         return data
-
-    class Meta:
-        model = Recipe
-        fields = (
-            'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time'
-        )
 
     def validate_ingredients(self, value):
         if not value:
@@ -242,3 +242,25 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def get_recipes_count(self, obj):
         return obj.author.recipes.count()
+
+    def validate(self, data):
+        request = self.context.get('request')
+        author = self.context.get('author')
+        if author == request.user:
+            raise serializers.ValidationError(
+                'Cannot subscribe to yourself.'
+            )
+        if Subscription.objects.filter(
+            user=request.user, author=author
+        ).exists():
+            raise serializers.ValidationError(
+                'Already subscribed.'
+            )
+        return data
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        author = self.context.get('author')
+        return Subscription.objects.create(
+            user=request.user, author=author
+        )
