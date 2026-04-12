@@ -25,10 +25,14 @@ class Command(BaseCommand):
             )
             self.stdout.write(
                 self.style.SUCCESS(
-                    'Loaded ' + str(Ingredient.objects.count()) + ' ingredients.'
+                    'Loaded '
+                    + str(Ingredient.objects.count())
+                    + ' ingredients.'
                 )
             )
         except Exception as e:
             self.stdout.write(
-                self.style.ERROR('Error loading ingredients: ' + str(e))
+                self.style.ERROR(
+                    'Error loading ingredients: ' + str(e)
+                )
             )
