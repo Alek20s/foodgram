@@ -1,67 +1,96 @@
-Foodgram — Продуктовый помощник
-Описание
+# Foodgram — Продуктовый помощник
+
+## Описание
+
 Foodgram — сервис для публикации рецептов. Пользователи могут создавать рецепты, добавлять их в избранное, подписываться на других авторов и скачивать список покупок.
-Технологии
 
-Python 3.11
-Django 5.1
-Django REST Framework
-PostgreSQL
-Docker
-Nginx
-GitHub Actions
+## Технологии
 
-Запуск проекта
-Требования
+- Python 3.11
+- Django 5.1
+- Django REST Framework
+- PostgreSQL
+- Docker
+- Nginx
+- GitHub Actions
 
-Docker
-Docker Compose
+## Запуск проекта
 
-Локальный запуск
+### Требования
 
-Клонировать репозиторий:
+- Docker
+- Docker Compose
 
-bashgit clone https://github.com/Alek20s/foodgram.git
+### Локальный запуск
+
+1. Клонировать репозиторий:
+```bash
+git clone https://github.com/Alek20s/foodgram.git
 cd foodgram
+```
 
-Создать файл .env в папке infra/ на основе .env.example:
+2. Создать файл `.env` в папке `infra/` на основе `.env.example`:
+```bash
+cp infra/.env.example infra/.env
+```
 
-bashcp infra/.env.example infra/.env
+3. Заполнить `.env` своими значениями.
 
-Заполнить .env своими значениями.
-Из папки infra/ запустить контейнеры:
-
-bashcd infra
+4. Из папки `infra/` запустить контейнеры:
+```bash
+cd infra
 docker-compose up -d
+```
 
-Выполнить миграции:
+5. Выполнить миграции:
+```bash
+docker-compose exec backend python manage.py migrate
+```
 
-bashdocker-compose exec backend python manage.py migrate
+6. Загрузить ингредиенты:
+```bash
+docker-compose exec backend python manage.py load_ingredients
+```
 
-Загрузить ингредиенты:
+7. Создать суперпользователя:
+```bash
+docker-compose exec backend python manage.py createsuperuser
+```
 
-bashdocker-compose exec backend python manage.py load_ingredients
+8. Собрать статику:
+```bash
+docker-compose exec backend python manage.py collectstatic --no-input
+```
 
-Создать суперпользователя:
+### Доступ к сервису
 
-bashdocker-compose exec backend python manage.py createsuperuser
+- Фронтенд: http://localhost/
+- API документация: http://localhost/api/docs/
+- Админ панель: http://localhost/admin/
 
-Собрать статику:
+## Развёртывание на сервере
 
-bashdocker-compose exec backend python manage.py collectstatic --no-input
-Доступ к сервису
+Проект автоматически разворачивается на сервере через GitHub Actions при пуше в ветку `main`.
 
-Фронтенд: http://localhost/
-API документация: http://localhost/api/docs/
-Админ панель: http://localhost/admin/
+### GitHub Secrets
 
-Развёртывание на сервере
-Проект автоматически разворачивается на сервере через GitHub Actions при пуше в ветку main.
-GitHub Secrets
 Необходимо добавить следующие секреты в настройках репозитория:
-СекретОписаниеDOCKER_USERNAMEИмя пользователя Docker HubDOCKER_PASSWORDПароль Docker HubHOSTIP адрес сервераUSERИмя пользователя сервераSSH_KEYПриватный SSH ключTELEGRAM_TOID Telegram чата для уведомленийTELEGRAM_TOKENТокен Telegram бота
-Файл .env на сервере
-Создать файл ~/foodgram/.env со следующими переменными:
+
+| Секрет | Описание |
+|--------|----------|
+| `DOCKER_USERNAME` | Имя пользователя Docker Hub |
+| `DOCKER_PASSWORD` | Пароль Docker Hub |
+| `HOST` | IP адрес сервера |
+| `USER` | Имя пользователя сервера |
+| `SSH_KEY` | Приватный SSH ключ |
+| `TELEGRAM_TO` | ID Telegram чата для уведомлений |
+| `TELEGRAM_TOKEN` | Токен Telegram бота |
+
+### Файл .env на сервере
+
+Создать файл `~/foodgram/.env` со следующими переменными:
+
+```
 SECRET_KEY=your-secret-key
 DEBUG=False
 ALLOWED_HOSTS=your-server-ip localhost 127.0.0.1
@@ -73,12 +102,16 @@ DB_HOST=db
 DB_PORT=5432
 
 DOCKER_USERNAME=your-dockerhub-username
-Демо
+```
+
+## Демо
+
 Проект доступен по адресу: http://158.160.201.93/
+
 Данные для входа в админку:
+- Email: aleksksn@yahoo.co.uk
+- Пароль: Foodgram2026
 
-Email: aleksksn@yahoo.co.uk
-Пароль: Foodgram2026
+## Автор
 
-Автор
 Алексей Косыхин
