@@ -145,7 +145,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_permissions(self):
-        if self.action in ('list', 'retrieve'):
+        if self.action in ('list', 'retrieve', 'get_link'):
             return [AllowAny()]
         if self.action in ('update', 'partial_update', 'destroy'):
             return [IsAuthenticated(), IsAuthorOrReadOnly()]
