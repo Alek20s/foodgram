@@ -54,16 +54,10 @@ const SingleCard = ({ loadItem, updateOrders }) => {
               });
             });
         } else {
-          const el = document.createElement("textarea");
-          el.value = shortLink;
-          document.body.appendChild(el);
-          el.select();
-          document.execCommand("copy");
-          document.body.removeChild(el);
-          setNotificationPosition("40px");
-          setTimeout(() => {
-            setNotificationPosition("-100%");
-          }, 3000);
+          setNotificationError({
+            text: `Ваша ссылка: ${shortLink}`,
+            position: "40px",
+          });
         }
       })
       .catch((err) => console.log(err));
