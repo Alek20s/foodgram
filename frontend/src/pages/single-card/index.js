@@ -38,9 +38,10 @@ const SingleCard = ({ loadItem, updateOrders }) => {
     api
       .copyRecipeLink({ id })
       .then(({ "short-link": shortLink }) => {
+        const fullLink = `${window.location.origin}${shortLink}`;
         if (navigator.clipboard && window.isSecureContext) {
           navigator.clipboard
-            .writeText(shortLink)
+            .writeText(fullLink)
             .then(() => {
               setNotificationPosition("40px");
               setTimeout(() => {
@@ -49,13 +50,13 @@ const SingleCard = ({ loadItem, updateOrders }) => {
             })
             .catch(() => {
               setNotificationError({
-                text: `Ваша ссылка: ${shortLink}`,
+                text: `Ваша ссылка: ${fullLink}`,
                 position: "40px",
               });
             });
         } else {
           setNotificationError({
-            text: `Ваша ссылка: ${shortLink}`,
+            text: `Ваша ссылка: ${fullLink}`,
             position: "40px",
           });
         }
