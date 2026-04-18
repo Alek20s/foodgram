@@ -260,3 +260,4 @@ const SingleCard = ({ loadItem, updateOrders }) => {
 };
 
 export default SingleCard;
+ 
