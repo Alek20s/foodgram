@@ -26,7 +26,9 @@ class RecipeIngredientFormSet(BaseInlineFormSet):
             and not form.cleaned_data.get('DELETE', False)
         ]
         if len(valid_forms) < 1:
-            raise ValidationError('Рецепт должен содержать хотя бы один ингредиент.')
+            raise ValidationError(
+                'Рецепт должен содержать хотя бы один ингредиент.'
+            )
 
 
 class RecipeIngredientInline(admin.TabularInline):
