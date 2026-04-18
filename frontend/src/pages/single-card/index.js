@@ -22,6 +22,7 @@ import { Notification } from "../../components/notification";
 
 const SingleCard = ({ loadItem, updateOrders }) => {
   const [loading, setLoading] = useState(true);
+  const [shortLink, setShortLink] = useState(null);
   const [notificationPosition, setNotificationPosition] = useState("-100%");
   const [notificationError, setNotificationError] = useState({
     text: "",
@@ -35,33 +36,21 @@ const SingleCard = ({ loadItem, updateOrders }) => {
   const history = useHistory();
 
   const handleCopyLink = () => {
-    api
-      .copyRecipeLink({ id })
-      .then(({ "short-link": shortLink }) => {
-        const fullLink = shortLink;
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard
-            .writeText(fullLink)
-            .then(() => {
-              setNotificationPosition("40px");
-              setTimeout(() => {
-                setNotificationPosition("-100%");
-              }, 3000);
-            })
-            .catch(() => {
-              setNotificationError({
-                text: `Ваша ссылка: ${fullLink}`,
-                position: "40px",
-              });
-            });
-        } else {
-          setNotificationError({
-            text: `Ваша ссылка: ${fullLink}`,
-            position: "40px",
-          });
-        }
-      })
-      .catch((err) => console.log(err));
+    const link = shortLink;
+    if (!link) return;
+    const el = document.createElement("textarea");
+    el.value = link;
+    el.setAttribute("readonly", "");
+    el.style.position = "absolute";
+    el.style.left = "-9999px";
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand("copy");
+    document.body.removeChild(el);
+    setNotificationPosition("40px");
+    setTimeout(() => {
+      setNotificationPosition("-100%");
+    }, 3000);
   };
 
   const handleErrorClose = () => {
@@ -80,6 +69,13 @@ const SingleCard = ({ loadItem, updateOrders }) => {
       .catch((err) => {
         history.push("/not-found");
       });
+
+    api
+      .copyRecipeLink({ id })
+      .then(({ "short-link": link }) => {
+        setShortLink(link);
+      })
+      .catch((err) => console.log(err));
   }, []);
 
   const { url } = useRouteMatch();
@@ -260,4 +256,3 @@ const SingleCard = ({ loadItem, updateOrders }) => {
 };
 
 export default SingleCard;
- 
