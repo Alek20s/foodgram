@@ -38,24 +38,33 @@ const SingleCard = ({ loadItem, updateOrders }) => {
     api
       .copyRecipeLink({ id })
       .then(({ "short-link": shortLink }) => {
-        navigator.clipboard
-          .writeText(shortLink)
-          .then(() => {
-            setNotificationPosition("40px");
-            setTimeout(() => {
-              setNotificationPosition("-100%");
-            }, 3000);
-          })
-          .catch(() => {
-            /**
-             * В Safari не работает запись в буфер внутри асинхронного запроса,
-             * поэтому добавил отдельную плашку на этот случай
-             */
-            setNotificationError({
-              text: `Ваша ссылка: ${shortLink}`,
-              position: "40px",
+        if (navigator.clipboard) {
+          navigator.clipboard
+            .writeText(shortLink)
+            .then(() => {
+              setNotificationPosition("40px");
+              setTimeout(() => {
+                setNotificationPosition("-100%");
+              }, 3000);
+            })
+            .catch(() => {
+              setNotificationError({
+                text: `Ваша ссылка: ${shortLink}`,
+                position: "40px",
+              });
             });
-          });
+        } else {
+          const el = document.createElement("textarea");
+          el.value = shortLink;
+          document.body.appendChild(el);
+          el.select();
+          document.execCommand("copy");
+          document.body.removeChild(el);
+          setNotificationPosition("40px");
+          setTimeout(() => {
+            setNotificationPosition("-100%");
+          }, 3000);
+        }
       })
       .catch((err) => console.log(err));
   };
@@ -155,9 +164,8 @@ const SingleCard = ({ loadItem, updateOrders }) => {
                   <div
                     className={styles["single-card__user-avatar"]}
                     style={{
-                      "background-image": `url(${
-                        author.avatar || DefaultImage
-                      })`,
+                      "background-image": `url(${author.avatar || DefaultImage
+                        })`,
                     }}
                   />
                   <LinkComponent
