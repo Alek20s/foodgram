@@ -20,6 +20,7 @@ class RecipeIngredientInline(admin.TabularInline):
     extra = 1
     min_num = 1
     validate_min = True
+    can_delete = False
 
 
 @admin.register(Recipe)
