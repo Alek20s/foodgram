@@ -38,7 +38,7 @@ const SingleCard = ({ loadItem, updateOrders }) => {
     api
       .copyRecipeLink({ id })
       .then(({ "short-link": shortLink }) => {
-        const fullLink = `${window.location.origin}${shortLink}`;
+        const fullLink = shortLink;
         if (navigator.clipboard && window.isSecureContext) {
           navigator.clipboard
             .writeText(fullLink)
