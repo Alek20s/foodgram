@@ -20,12 +20,13 @@ class IngredientAdmin(admin.ModelAdmin):
 class RecipeIngredientFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
-        valid_forms = [
-            form for form in self.forms
-            if form.cleaned_data.get('ingredient')
-            and not form.cleaned_data.get('DELETE', False)
-        ]
-        if len(valid_forms) < 1:
+        count = 0
+        for form in self.forms:
+            if (form.cleaned_data
+                    and form.cleaned_data.get('ingredient')
+                    and not form.cleaned_data.get('DELETE', False)):
+                count += 1
+        if count < 1:
             raise ValidationError(
                 'Рецепт должен содержать хотя бы один ингредиент.'
             )
