@@ -1,6 +1,4 @@
 from django.contrib import admin
-from django.core.exceptions import ValidationError
-from django.forms import BaseInlineFormSet
 
 from .models import (Favorite, Ingredient, Recipe,
                      RecipeIngredient, ShoppingCart, Subscription, Tag)
@@ -17,28 +15,11 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-class RecipeIngredientFormSet(BaseInlineFormSet):
-    def clean(self):
-        super().clean()
-        count = 0
-        for form in self.forms:
-            if (form.cleaned_data
-                    and form.cleaned_data.get('ingredient')
-                    and not form.cleaned_data.get('DELETE', False)):
-                count += 1
-        if count < 1:
-            raise ValidationError(
-                'Рецепт должен содержать хотя бы один ингредиент.'
-            )
-
-
 class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
-    formset = RecipeIngredientFormSet
     extra = 1
     min_num = 1
     validate_min = True
-    can_delete = False
 
 
 @admin.register(Recipe)
